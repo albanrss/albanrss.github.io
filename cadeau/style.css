@@ -16,9 +16,16 @@ body {
 
 .scene {
   position: relative;
-  width: 350px;
-  height: 350px;
+  width: 60vw;
+  height: 60vw;
   cursor: pointer;
+}
+
+@media screen and (min-width: 700px) {
+  .scene {
+    width: 60vh;
+    height: 60vh;
+  }
 }
 
 /* Cadeau */
@@ -123,6 +130,8 @@ body {
 
 /* Message caché */
 .message {
+  font-family: Cursive, 'Times New Roman';
+  font-size: large;
   position: absolute;
   inset: 0;
   display: flex;
@@ -133,6 +142,10 @@ body {
   opacity: 0;
   pointer-events: none;
   transition: opacity .5s .6s;
+}
+
+.message p {
+  font-size: 1.5rem;
 }
 
 /* Animations */
