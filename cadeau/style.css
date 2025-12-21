@@ -130,8 +130,8 @@ body {
 
 /* Message caché */
 .message {
-  font-family: Cursive, 'Times New Roman';
-  font-size: large;
+  font-family: "Berkshire Swash", serif;
+  color: #502020;
   position: absolute;
   inset: 0;
   display: flex;
@@ -144,8 +144,17 @@ body {
   transition: opacity .5s .6s;
 }
 
+.message h1 {
+  white-space: nowrap;
+}
+
 .message p {
   font-size: 1.5rem;
+}
+
+.message p span {
+  white-space: nowrap;
+  word-break: keep-all;
 }
 
 /* Animations */
