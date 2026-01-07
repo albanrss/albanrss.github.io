@@ -1,13 +1,10 @@
-name: Deploy Docusaurus to GitHub Pages
+name: Deploy Site to GitHub Pages
 
 on:
   push:
     branches:
       - main
       - master
-    paths:
-      - 'doc-rtype/**'
-      - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
 
 permissions:
@@ -20,8 +17,30 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      cadeau: ${{ steps.filter.outputs.cadeau }}
+      temp: ${{ steps.filter.outputs.temp }}
+      doc-rtype: ${{ steps.filter.outputs.doc-rtype }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            cadeau:
+              - 'cadeau/**'
+            temp:
+              - 'temp/**'
+            doc-rtype:
+              - 'doc-rtype/**'
+              - '.github/workflows/deploy-docs.yml'
+
+  build-docusaurus:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.doc-rtype == 'true' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,24 +66,60 @@ jobs:
         working-directory: doc-rtype
         run: npm run build
 
-      - name: Add .nojekyll file
-        run: touch doc-rtype/build/.nojekyll
+      - name: Upload Docusaurus artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: doc-rtype-build
+          path: doc-rtype/build
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [changes, build-docusaurus]
+    if: always() && !cancelled()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Docusaurus build
+        if: needs.changes.outputs.doc-rtype == 'true' || github.event_name == 'workflow_dispatch'
+        uses: actions/download-artifact@v4
+        with:
+          name: doc-rtype-build
+          path: _site/doc-rtype
+        continue-on-error: true
+
+      - name: Prepare deployment directory
+        run: |
+          mkdir -p _site
+
+          if [ -d "cadeau" ]; then
+            cp -r cadeau _site/
+            echo "✓ Copied /cadeau"
+          fi
+
+          if [ -d "temp" ]; then
+            cp -r temp _site/
+            echo "✓ Copied /temp"
+          fi
+
+          if [ ! -d "_site/doc-rtype" ] && [ -d "doc-rtype/build" ]; then
+            cp -r doc-rtype/build _site/doc-rtype
+            echo "✓ Using existing doc-rtype build"
+          fi
+
+          touch _site/.nojekyll
+          
+          echo "Deployment directory contents:"
+          ls -la _site/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: doc-rtype/build
+          path: _site
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
