@@ -47,6 +47,9 @@ jobs:
         working-directory: doc-rtype
         run: npm run build
 
+      - name: Add .nojekyll file
+        run: touch doc-rtype/build/.nojekyll
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
