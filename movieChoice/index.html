@@ -1,0 +1,27 @@
+<html>
+<head>
+    <title>Movie Selector</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Movie Night Selector</h1>
+    <div id="controls">
+        <input type="text" id="movieInput" placeholder="Enter movie title">
+        <button id="addMovieButton">Add Movie</button>
+        <button id="selectMovieButton">Select Random Movie</button>
+    </div>
+    <div id="movieList"></div>
+    <div id="selectedMovie">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <h2>🎬 Selected Movie</h2>
+            <div id="selectedMovieContent">
+                <img id="selectedMovieImage" src="" alt="">
+                <p id="selectedMovieName"></p>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
