@@ -23,7 +23,7 @@ jobs:
       cadeau: ${{ steps.filter.outputs.cadeau }}
       temp: ${{ steps.filter.outputs.temp }}
       doc-rtype: ${{ steps.filter.outputs.doc-rtype }}
-      movieChoice: ${{ steps.filter.outputs.movieChoice }}
+      movie-choice: ${{ steps.filter.outputs.movie-choice }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -37,7 +37,7 @@ jobs:
             doc-rtype:
               - 'doc-rtype/**'
               - '.github/workflows/deploy-docs.yml'
-            movieChoice:
+            movie-choice:
               - 'movie-choice/**'
 
   build-docusaurus:
