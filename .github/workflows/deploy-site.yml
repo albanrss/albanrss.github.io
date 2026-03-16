@@ -22,7 +22,6 @@ jobs:
     outputs:
       cadeau: ${{ steps.filter.outputs.cadeau }}
       temp: ${{ steps.filter.outputs.temp }}
-      doc-rtype: ${{ steps.filter.outputs.doc-rtype }}
       movie-choice: ${{ steps.filter.outputs.movie-choice }}
     steps:
       - uses: actions/checkout@v4
@@ -34,62 +33,16 @@ jobs:
               - 'cadeau/**'
             temp:
               - 'temp/**'
-            doc-rtype:
-              - 'doc-rtype/**'
-              - '.github/workflows/deploy-docs.yml'
             movie-choice:
               - 'movie-choice/**'
 
-  build-docusaurus:
-    runs-on: ubuntu-latest
-    needs: changes
-    if: needs.changes.outputs.doc-rtype == 'true' || github.event_name == 'workflow_dispatch'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: doc-rtype/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('doc-rtype/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies
-        working-directory: doc-rtype
-        run: npm ci
-
-      - name: Build Docusaurus
-        working-directory: doc-rtype
-        run: npm run build
-
-      - name: Upload Docusaurus artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: doc-rtype-build
-          path: doc-rtype/build
-
   deploy:
     runs-on: ubuntu-latest
-    needs: [changes, build-docusaurus]
+    needs: [changes]
     if: always() && !cancelled()
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Download Docusaurus build
-        if: needs.changes.outputs.doc-rtype == 'true' || github.event_name == 'workflow_dispatch'
-        uses: actions/download-artifact@v4
-        with:
-          name: doc-rtype-build
-          path: _site/doc-rtype
-        continue-on-error: true
 
       - name: Prepare deployment directory
         run: |
@@ -103,11 +56,6 @@ jobs:
           if [ -d "temp" ]; then
             cp -r temp _site/
             echo "✓ Copied /temp"
-          fi
-
-          if [ ! -d "_site/doc-rtype" ] && [ -d "doc-rtype/build" ]; then
-            cp -r doc-rtype/build _site/doc-rtype
-            echo "✓ Using existing doc-rtype build"
           fi
 
           if [ -d "movie-choice" ]; then
