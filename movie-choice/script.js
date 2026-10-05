@@ -12,13 +12,11 @@ const selectMovieButton = document.getElementById("selectMovieButton")
 /** @type {Movie[]} */
 let movieList = []
 
-const englishMediaWikiAPIURL = "https://en.wikipedia.org/w/api.php"
-
 // Fetches the best-matching Wikipedia title + thumbnail in a single API call.
 async function getMovieInfo(name) {
     try {
         // 1ère requête : recherche textuelle pour trouver le titre exact de la page Wikipedia
-        const searchUrl = `${englishMediaWikiAPIURL}?action=query&list=search&srsearch=${encodeURIComponent(name + " film")}&format=json&origin=*&srlimit=1`
+        const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name + " film")}&format=json&origin=*&srlimit=1`
         const searchResponse = await fetch(searchUrl)
         if (searchResponse.status !== 200) return { title: name, url: "" }
 
@@ -26,16 +24,12 @@ async function getMovieInfo(name) {
         const bestTitle = searchData?.query?.search?.[0]?.title
         if (!bestTitle) return { title: name, url: "" }
 
-        // 2ème requête : récupère le thumbnail à partir du titre exact trouvé
-        const infoUrl = `${englishMediaWikiAPIURL}?action=query&titles=${encodeURIComponent(bestTitle)}&prop=pageimages&pithumbsize=300&format=json&origin=*`
-        const infoResponse = await fetch(infoUrl)
-        if (infoResponse.status !== 200) return { title: bestTitle, url: "" }
+        // 2ème requête : récupère le thumbnail via l'API REST summary (plus fiable que pageimages)
+        const summaryResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle)}`)
+        if (summaryResponse.status !== 200) return { title: bestTitle, url: "" }
 
-        const infoData = await infoResponse.json()
-        const pages = infoData?.query?.pages
-        // L'API retourne un objet indexé par page ID, on prend la première (et unique) entrée
-        const page = pages ? Object.values(pages)[0] : null
-        const url = page?.thumbnail?.source || ""
+        const summaryData = await summaryResponse.json()
+        const url = summaryData?.thumbnail?.source || ""
         return { title: bestTitle, url }
 
     } catch (error) {
