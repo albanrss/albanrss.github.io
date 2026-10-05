@@ -66,6 +66,11 @@ jobs:
             echo "✓ Copied /movie-choice"
           fi
 
+          if [ -f "index.html" ]; then
+            cp index.html _site/
+            echo "✓ Copied index.html"
+          fi
+
           touch _site/.nojekyll
           
           echo "Deployment directory contents:"
