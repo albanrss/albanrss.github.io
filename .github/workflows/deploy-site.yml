@@ -37,6 +37,9 @@ jobs:
               - 'movie-choice/**'
 
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: [changes]
     if: always() && !cancelled()
@@ -69,7 +72,7 @@ jobs:
           ls -la _site/
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
